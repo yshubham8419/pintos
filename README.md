@@ -5,7 +5,7 @@ Official website of Pintos-OS is [pintos-os.org](pintos-os.org).
 To know more about the operating system and projects related to it, visit [http://courses.mpi-sws.org/os-ss13/assignments/pintos/pintos.html](http://courses.mpi-sws.org/os-ss13/assignments/pintos/pintos.html).
 
 This version of Pintos-OS is froked from **git://pintos-os.org/pintos-anon**.
-You can also view the Stanford git repository of Pintos-OS using their web CGI [http://pintos-os.org/cgi-bin/gitweb.cgi](https://www.qemu.org/download/).
+You can also view the Stanford git repository of Pintos-OS using their web CGI [http://pintos-os.org/cgi-bin/gitweb.cgi](http://pintos-os.org/cgi-bin/gitweb.cgi).
 
 ## Getting Started
 There are two branches for the base operating system (without the project code): `master` and `configured`.
