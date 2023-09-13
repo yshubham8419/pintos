@@ -20,6 +20,11 @@
    of thread.h for details. */
 #define THREAD_MAGIC 0xcd6abf4b
 
+//code starts here declaring sleep queue
+struct list sleep_queue;
+//code ends here 
+//
+
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
@@ -92,13 +97,38 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
-
+  //code starts here 
+  //initializing sleep queue
+  list_init(&sleep_queue);
+  //ends here
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
 }
+//code starts here
+void 
+thread_wake(int64_t CurrentTicks){
+ 
+  //waking up the sleeping threads
+  while (!list_empty(&sleep_queue))
+  {
+    struct thread *t = list_entry(list_front(&sleep_queue), struct thread, elem);
+
+    if (CurrentTicks >= t->wakeup_ticks)
+    {
+      list_pop_front(&sleep_queue); // Remove the first (earliest wakeup) thread from the sleep queue
+      thread_unblock(t);            // Wake up the thread
+    }
+    else
+    {
+      break; // No need to check further, threads are sorted by wakeup_ticks
+    }
+  }
+
+}
+//code ends here 
 
 /* Starts preemptive thread scheduling by enabling interrupts.
    Also creates the idle thread. */

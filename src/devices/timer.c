@@ -83,18 +83,42 @@ timer_elapsed (int64_t then)
 {
   return timer_ticks () - then;
 }
-
+/*my code starts here
+this is a comparator function to keep the sleep queue sorted*/
+static bool
+thread_wakeup_less(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+  struct thread *thread_a = list_entry(a, struct thread, elem);
+  struct thread *thread_b = list_entry(b, struct thread, elem);
+  return thread_a->wakeup_ticks < thread_b->wakeup_ticks;
+}
 /* Sleeps for approximately TICKS timer ticks.  Interrupts must
    be turned on. */
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
+  // int64_t start = timer_ticks ();
 
-  ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+  // ASSERT (intr_get_level () == INTR_ON);
+  // while (timer_elapsed (start) < ticks) 
+  //   thread_yield ();
+  int64_t start = timer_ticks();
+  ASSERT(intr_get_level() == INTR_ON);
+
+  struct thread *cur_thread = thread_current();
+  cur_thread->wakeup_ticks = start + ticks;
+
+  enum intr_level old_level;
+  old_level = intr_disable();
+
+  // Insert the thread into the sleep queue in sorted order
+  list_insert_ordered(&sleep_queue, &cur_thread->elem, thread_wakeup_less, NULL);
+
+  thread_block();
+  intr_set_level(old_level);
 }
+/*code ends here */ 
+
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
    turned on. */
@@ -172,6 +196,9 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+  //code starts here
+  thread_wake(ticks);
+  //ends here
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
