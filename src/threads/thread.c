@@ -258,6 +258,16 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
+
+//my code starts here
+static bool
+thread_priority_less(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+    struct thread *thread_a = list_entry(a, struct thread, elem);
+    struct thread *thread_b = list_entry(b, struct thread, elem);
+    return thread_a->priority > thread_b->priority; // Higher priority first
+}
+//my code ends here
 void
 thread_unblock (struct thread *t) 
 {
@@ -267,7 +277,9 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+  //code starts here 
+  list_insert_ordered(&ready_list, &t->elem, thread_priority_less, NULL);
+  //ends here
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -337,8 +349,11 @@ thread_yield (void)
   ASSERT (!intr_context ());
 
   old_level = intr_disable ();
-  if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+  if (cur != idle_thread){
+    //code starts here 
+    list_insert_ordered (&ready_list, &cur->elem, thread_priority_less, NULL);
+    //code ends here
+  }
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -359,13 +374,16 @@ thread_foreach (thread_action_func *func, void *aux)
       struct thread *t = list_entry (e, struct thread, allelem);
       func (t, aux);
     }
-}
+}  
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
+  //code starts here
+  thread_yield();
+  //ends here
 }
 
 /* Returns the current thread's priority. */
